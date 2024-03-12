@@ -145,7 +145,8 @@ VideoReader::~VideoReader(){
 
 void VideoReader::SetVideoStream(int stream_nb) {
     if (!fmt_ctx_) return;
-    const AVCodec *dec;
+    AVCodec* dec = nullptr;
+
     int st_nb = av_find_best_stream(fmt_ctx_.get(), AVMEDIA_TYPE_VIDEO, stream_nb, -1, &dec, 0);
     // LOG(INFO) << "find best stream: " << st_nb;
     CHECK_GE(st_nb, 0) << "ERROR cannot find video stream with wanted index: " << stream_nb;

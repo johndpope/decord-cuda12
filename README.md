@@ -27,25 +27,31 @@ Table of contents
 
 ## Preliminary benchmark
 
-Decord is good at handling random access patterns, which is rather common during neural network training.
-
-![Speed up](https://user-images.githubusercontent.com/3307514/71223638-7199f300-2289-11ea-9e16-104038f94a55.png)
-
 ## Installation
 
-### Install via pip
 
 Simply use
 
 ```bash
-pip install decord
+gh repo clone johndpope/decord-cuda12
+git submodule update --init --recursive
+
+sudo add-apt-repository ppa:jonathonf/ffmpeg-4
+sudo apt-get install -y ffmpeg 
+
+cd decord
+mkdir build && cd build
+cmake .. -DUSE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=86 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_COMPILER=/usr/local/cuda-12.1/bin/nvcc
+make
+cd ../python
+python3 setup.py install --user
+
 ```
 
 Supported platforms:
 
 - [x] Linux
-- [x] Mac OS >= 10.12, python>=3.5
-- [x] Windows
+
 
 **Note that only CPU versions are provided with PYPI now. Please build from source to enable GPU acclerator.**
 
@@ -73,18 +79,7 @@ git clone --recursive https://github.com/dmlc/decord
 
 Build the shared library in source root directory:
 
-```bash
-cd decord
-mkdir build && cd build
-cmake .. -DUSE_CUDA=0 -DCMAKE_BUILD_TYPE=Release
-make
-```
 
-you can specify `-DUSE_CUDA=ON` or `-DUSE_CUDA=/path/to/cuda` or `-DUSE_CUDA=ON` `-DCMAKE_CUDA_COMPILER=/path/to/cuda/nvcc` to enable NVDEC hardware accelerated decoding:
-
-```bash
-cmake .. -DUSE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=86 -DCMAKE_BUILD_TYPE=Release
-```
 
 Note that if you encountered the an issue with `libnvcuvid.so` (e.g., see [#102](https://github.com/dmlc/decord/issues/102)), it's probably due to the missing link for
 `libnvcuvid.so`, you can manually find it (`ldconfig -p | grep libnvcuvid`) and link the library to `CUDA_TOOLKIT_ROOT_DIR\lib64` to allow `decord` smoothly detect and link the correct library.
@@ -101,71 +96,6 @@ echo "PYTHONPATH=$PYTHONPATH:$pwd" >> ~/.bashrc
 source ~/.bashrc
 # option 2: install with setuptools
 python3 setup.py install --user
-```
-
-#### Mac OS
-
-Installation on macOS is similar to Linux. But macOS users need to install building tools like clang, GNU Make, cmake first.
-
-Tools like clang and GNU Make are packaged in _Command Line Tools_ for macOS. To install:
-
-```bash
-xcode-select --install
-```
-
-To install other needed packages like cmake, we recommend first installing Homebrew, which is a popular package manager for macOS. Detailed instructions can be found on its [homepage](https://brew.sh/).
-
-After installation of Homebrew, install cmake and ffmpeg by:
-
-```bash
-brew install cmake ffmpeg
-# note: make sure you have cmake 3.8 or later, you can install from cmake official website if it's too old
-```
-
-Clone the repo recursively(important)
-
-```bash
-git clone --recursive https://github.com/dmlc/decord
-```
-
-Then go to root directory build shared library:
-
-```bash
-cd decord
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make
-```
-
-Install python bindings:
-
-```bash
-cd ../python
-# option 1: add python path to $PYTHONPATH, you will need to install numpy separately
-pwd=$PWD
-echo "PYTHONPATH=$PYTHONPATH:$pwd" >> ~/.bash_profile
-source ~/.bash_profile
-# option 2: install with setuptools
-python3 setup.py install --user
-```
-
-#### Windows
-
-For windows, you will need CMake and Visual Studio for C++ compilation.
-
--   First, install `git`, `cmake`, `ffmpeg` and `python`. You can use [Chocolatey](https://chocolatey.org/) to manage packages similar to Linux/Mac OS.
--   Second, install [`Visual Studio 2017 Community`](https://visualstudio.microsoft.com/), this my take some time.
-
-When dependencies are ready, open command line prompt:
-
-```bash
-cd your-workspace
-git clone --recursive https://github.com/dmlc/decord
-cd decord
-mkdir build
-cd build
-cmake -DCMAKE_CXX_FLAGS="/DDECORD_EXPORTS" -DCMAKE_CONFIGURATION_TYPES="Release" -G "Visual Studio 15 2017 Win64" ..
-# open `decord.sln` and build project
 ```
 
 ## Usage
